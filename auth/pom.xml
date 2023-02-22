@@ -67,8 +67,8 @@
 					<compilerArgs>
 						<arg>--enable-preview</arg>
 					</compilerArgs>
-					<source>13</source>
-					<target>13</target>
+					<source>14</source>
+					<target>14</target>
 				</configuration>
 			</plugin>
 
