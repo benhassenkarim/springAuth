@@ -1,11 +1,14 @@
 package com.scalablescripts.auth.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.scalablescripts.auth.model.user1;
 import com.scalablescripts.auth.service.AuthService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+
 
 @RestController
 @RequestMapping("/api")
@@ -18,7 +21,7 @@ public class AuthController {
     }
 
 
-record RegisterRequest(@JsonProperty("first_name") String firstName, @JsonProperty("last_name") String lastName, String email, String password, @JsonProperty("password_confirm")String passwordConfirm) {}
+    record RegisterRequest(@JsonProperty("first_name") String firstName, @JsonProperty("last_name") String lastName, String email, String password, @JsonProperty("password_confirm")String passwordConfirm) {}
     record RegisterResponse(Long id,@JsonProperty("first_name") String firstName, @JsonProperty("last_name") String lastName, String email){}
 @PostMapping(value = "/register")
   public RegisterResponse register(@RequestBody  RegisterRequest registerRequest){
@@ -32,4 +35,12 @@ record RegisterRequest(@JsonProperty("first_name") String firstName, @JsonProper
         );
       return new RegisterResponse(user.getId(),user.getFirstName(),user.getLastName(),user.getEmail());
 }
+    record LoginRequest(String email,String password){}
+    record LoginResponse(Long id,@JsonProperty("first_name") String firstName, @JsonProperty("last_name") String lastName, String email){}
+@PostMapping(value = "/login")
+    public LoginResponse login(@RequestBody LoginRequest loginRequest ){
+        var user=authService.login(loginRequest.email(),loginRequest.password());
+        return new LoginResponse(user.getId(),user.getFirstName(),user.getLastName(),user.getEmail());
+}
+
 }

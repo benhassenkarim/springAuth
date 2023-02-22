@@ -1,7 +1,11 @@
 package com.scalablescripts.auth.service;
 
+import com.scalablescripts.auth.error.EmailAlreadyExist;
+import com.scalablescripts.auth.error.InvalidCreditialsError;
+import com.scalablescripts.auth.error.PasswordNotMatch;
 import com.scalablescripts.auth.model.user1;
 import com.scalablescripts.auth.repository.UserRepo;
+import org.springframework.data.relational.core.conversion.DbActionExecutionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,10 +26,25 @@ public class AuthService {
     public user1 register(String firstName, String lastName, String email, String password, String passwordConfirm) {
 
         if(!Objects.equals(password,passwordConfirm))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"password do not match");
+            throw new PasswordNotMatch();
+user1 user;
+        try{
+            user=userRepo.save(
+                    user1.of(firstName,lastName,email,passwordEncoder.encode(password))
+            );
+        }
+        catch (DbActionExecutionException exception){
+            throw new EmailAlreadyExist();
+        }
+        return user;
+    }
 
-        return userRepo.save(
-           user1.of(firstName,lastName,email,passwordEncoder.encode(password))
-   );
+    public user1 login(String email, String password) {
+        var user=userRepo.findByEmail(email)
+                .orElseThrow(InvalidCreditialsError::new);
+        if(!passwordEncoder.matches(password,user.getPassword()))
+            throw new InvalidCreditialsError();
+
+        return user;
     }
 }
