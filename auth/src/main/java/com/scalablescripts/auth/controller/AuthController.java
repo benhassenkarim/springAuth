@@ -71,4 +71,14 @@ record LogoutResponse(String message){}
         return new LogoutResponse("success");
 }
 
+    record ForgotRequest(String email){}
+    record ForgotResponse(String message){}
+    @PostMapping("/forgot")
+    public ForgotResponse forgot(@RequestBody ForgotRequest forgotRequest,HttpServletRequest request){
+        var OriginUrl=request.getHeader("Origin");
+        authService.forgot(forgotRequest.email,OriginUrl);
+        return new ForgotResponse("success");
+    }
+
+
 }

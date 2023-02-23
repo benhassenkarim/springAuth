@@ -1,6 +1,7 @@
 package com.scalablescripts.auth.service;
 
 import com.scalablescripts.auth.error.*;
+import com.scalablescripts.auth.model.PasswordRecovery;
 import com.scalablescripts.auth.model.Token;
 import com.scalablescripts.auth.model.user1;
 import com.scalablescripts.auth.repository.UserRepo;
@@ -10,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -79,5 +81,13 @@ user1 user;
         if (tokenIsRemoved)
             userRepo.save(user);
         return tokenIsRemoved;
+    }
+
+    public void forgot(String email, String originUrl) {
+        var token= UUID.randomUUID().toString().replace("-","");
+        var user=userRepo.findByEmail(email)
+                .orElseThrow(UserNotFoundError::new);
+        user.addPasswordRecovery(new PasswordRecovery(token));
+        userRepo.save(user);
     }
 }

@@ -18,4 +18,11 @@ public interface UserRepo extends CrudRepository<user1,Long> {
             where u.id = :id and t.refresh_token = :refreshToken and t.expired_at >= :exoiredAt
             """)
     Optional<user1> findByIdAndTokenRefreshTokenAndTokenExpiredAtGreaterThan(Long id, String refreshToken, LocalDateTime expiredAt);
+
+    @Query("""
+            select u.* from user1 u inner join password_recovery pr on u.id = pr.user1 
+            where pr.token = :token
+            """)
+    Optional<user1> findByPasswordRecoveriesToken(String token);
 }
+
