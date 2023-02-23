@@ -19,15 +19,18 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final String accesTokenSecret;
     private final String refreshTokenSecret;
+    private final MailService mailService;
 
     public AuthService(UserRepo userRepo,
                        PasswordEncoder passwordEncoder,
-                      @Value("${application.security.access-token-secret}") String accesTokenSecret,
-                       @Value("${application.security.refresh-token-secret}")  String refreshTokenSecret) {
+                       @Value("${application.security.access-token-secret}") String accesTokenSecret,
+                       @Value("${application.security.refresh-token-secret}") String refreshTokenSecret,
+                       MailService mailService) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
         this.accesTokenSecret = accesTokenSecret;
         this.refreshTokenSecret = refreshTokenSecret;
+        this.mailService = mailService;
     }
 
     public user1 register(String firstName, String lastName, String email, String password, String passwordConfirm) {
@@ -88,6 +91,7 @@ user1 user;
         var user=userRepo.findByEmail(email)
                 .orElseThrow(UserNotFoundError::new);
         user.addPasswordRecovery(new PasswordRecovery(token));
+        mailService.sendForgotMessage(email,token,originUrl);
         userRepo.save(user);
     }
 }
