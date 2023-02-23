@@ -15,7 +15,7 @@ public class MailService {
         this.javaMailSender = javaMailSender;
 
         this.defaultFrontendUrl = defaultFrontendUrl;
-        test=defaultFrontendUrl;
+
     }
     public void sendForgotMessage(String email,String token,String baseUrl){
         var url=baseUrl!=null ? baseUrl :defaultFrontendUrl;

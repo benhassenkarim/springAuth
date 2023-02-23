@@ -94,4 +94,15 @@ user1 user;
         mailService.sendForgotMessage(email,token,originUrl);
         userRepo.save(user);
     }
+
+    public void reset(String token, String password, String passwordConfirm) {
+        if(!Objects.equals(password,passwordConfirm))
+            throw new PasswordNotMatch();
+        var user=userRepo.findByPasswordRecoveriesToken(token)
+                .orElseThrow(InvalidLinkError::new);
+        user.setPassword(passwordEncoder.encode(password));
+        user.removePasswordRecoveryif(passwordRecovery -> Objects.equals(passwordRecovery.token(),token));
+        userRepo.save(user);
+
+    }
 }
