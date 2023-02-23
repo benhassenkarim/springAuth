@@ -1,9 +1,7 @@
 package com.scalablescripts.auth.service;
 
-import com.scalablescripts.auth.error.EmailAlreadyExist;
-import com.scalablescripts.auth.error.InvalidCreditialsError;
-import com.scalablescripts.auth.error.PasswordNotMatch;
-import com.scalablescripts.auth.error.UserNotFoundError;
+import com.scalablescripts.auth.error.*;
+import com.scalablescripts.auth.model.Token;
 import com.scalablescripts.auth.model.user1;
 import com.scalablescripts.auth.repository.UserRepo;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,13 +50,34 @@ user1 user;
         if(!passwordEncoder.matches(password,user.getPassword()))
             throw new InvalidCreditialsError();
 
-        return Login.of(user.getId(),accesTokenSecret,refreshTokenSecret);
+        var login=Login.of(user.getId(),accesTokenSecret,refreshTokenSecret);
+        var refreshJwt=login.getRefreshToken();
+        user.addToken(new Token(refreshJwt.getToken(),refreshJwt.getIssuedAt(),refreshJwt.getExpiration() ));
+        userRepo.save(user);
+        return login;
     }
 
     public user1 getUserFromToken(String token) {
 
-        var userId=Token.from(token,accesTokenSecret);
+        var userId= Jwt.from(token,accesTokenSecret).getUserId();
         return userRepo.findById(userId)
                 .orElseThrow(UserNotFoundError::new);
+    }
+
+    public Login refreshAccess(String refreshToken) {
+        var refreshJwt= Jwt.from(refreshToken,refreshTokenSecret);
+
+        var user=userRepo.findByIdAndTokenRefreshTokenAndTokenExpiredAtGreaterThan(refreshJwt.getUserId(),refreshJwt.getToken(),refreshJwt.getExpiration())
+                .orElseThrow(UnauthenticatiodError::new);
+        return Login.of(refreshJwt.getUserId(),accesTokenSecret, refreshJwt);
+    }
+    public Boolean logout(String refreshToken){
+        var refreshJwt=Jwt.from(refreshToken,refreshTokenSecret);
+        var user=userRepo.findById(refreshJwt.getUserId())
+                .orElseThrow(UnknownError::new);
+        var tokenIsRemoved=user.removeTokenIf(token ->Objects.equals(token.refreshToken(),refreshToken) );
+        if (tokenIsRemoved)
+            userRepo.save(user);
+        return tokenIsRemoved;
     }
 }

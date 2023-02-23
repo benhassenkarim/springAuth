@@ -54,5 +54,21 @@ public class AuthController {
         var user=(user1) request.getAttribute("user");
         return  new UserResponse(user.getId(),user.getFirstName(),user.getLastName(),user.getEmail());
 }
+    record RefreshResponce(String token){}
+@PostMapping("/refresh")
+    public RefreshResponce refresh(@CookieValue("refresh_token") String refreshToken){
+
+        return new RefreshResponce(authService.refreshAccess(refreshToken).getAccessToken().getToken());
+}
+record LogoutResponse(String message){}
+@PostMapping("/logout")
+    public LogoutResponse logout(HttpServletResponse response,@CookieValue("refresh_token") String refreshToken){
+        authService.logout(refreshToken);
+        Cookie cookie=new Cookie("refresh_token",null);
+        cookie.setMaxAge(0);
+        cookie.setHttpOnly(true);
+        response.addCookie(cookie);
+        return new LogoutResponse("success");
+}
 
 }
