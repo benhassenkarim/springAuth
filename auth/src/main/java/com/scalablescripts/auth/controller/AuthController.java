@@ -1,13 +1,12 @@
 package com.scalablescripts.auth.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.scalablescripts.auth.model.user1;
 import com.scalablescripts.auth.service.AuthService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 
@@ -47,6 +46,13 @@ public class AuthController {
     cookie.setPath("/api");
     response.addCookie(cookie);
         return new LoginResponse(login.getAccessToken().getToken());
+}
+    record UserResponse(Long id,@JsonProperty("first_name") String firstName, @JsonProperty("last_name") String lastName, String email){}
+
+@GetMapping("/user")
+    public UserResponse user(HttpServletRequest request){
+        var user=(user1) request.getAttribute("user");
+        return  new UserResponse(user.getId(),user.getFirstName(),user.getLastName(),user.getEmail());
 }
 
 }
